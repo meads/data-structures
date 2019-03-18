@@ -68,7 +68,7 @@ func (t *Trie) Find(word string) bool {
 
 // String prints the string value of the Trie
 func (t *Trie) String() string {
-	b, err := json.MarshalIndent(t, "", "\t")
+	b, err := json.MarshalIndent(t, "", "  ")
 	if err != nil {
 		panic(err)
 	}
@@ -94,14 +94,21 @@ func (t *Trie) Remove(word string) string {
 	}
 
 	// for case where some parts of 'word' can be removed from trie
-	for j := len(suffixes) - 1; j > 0; j-- {
-		parent := suffixes[j]
-		// fmt.Printf("\nhere is the parent Val: %+v", parent)
-		child := string(word[j])
-		// fmt.Printf("\nhere is the child being deleted from the map: '%s'", child)
-		delete(parent.Children, child)
+	for j := 1; j < len(suffixes); j++ {
+		parent := suffixes[j] // first element which was the last visited in above loop
+
+		childLetter := string(word[len(suffixes)-j]) // last character in the string "word"
+
+		if childNode, exists := parent.Children[childLetter]; exists {
+			if len(childNode.Children) == 0 {
+				delete(parent.Children, childLetter)
+			} else {
+				return fmt.Sprintf("word '%s' cannot be removed because there are dependent suffixes", word)
+			}
+		}
+
 		if parent.CompletesString || len(parent.Children) > 0 {
-			return fmt.Sprintf("some suffixes of %s, removed from trie", word)
+			return fmt.Sprintf("some suffixes of '%s', were removed from trie", word)
 		}
 	}
 
@@ -114,15 +121,13 @@ func (t *Trie) Remove(word string) string {
 func main() {
 	trie := NewTrie()
 	trie.Insert("listen")
-	fmt.Println(trie.Find("listened"))
-	trie.Insert("listened")
-	fmt.Println(trie.Find("listened"))
-	// fmt.Printf("here is the try before Remove: \n%#v\n", trie)
-	fmt.Println(trie.String())
-	fmt.Println(trie.Remove("listen")) // <- bug! it should not remove "listen" if "listened" depends on it
-	// fmt.Printf("here is the try after Remove: \n%#v\n", trie)
-	fmt.Println(trie.String())
-	fmt.Println(trie.Find("listened"))
-	fmt.Println(trie.Find("listen"))
+	fmt.Printf("'listen' found = %v\n", trie.Find("listen"))
 
+	trie.Insert("listened")
+	fmt.Printf("'listened' found = %v\n", trie.Find("listened"))
+
+	fmt.Println(trie.Remove("listen"))
+
+	fmt.Printf("'listen' found after remove? = %v\n", trie.Find("listen"))
+	fmt.Printf("'listened' found after remove? = %v\n", trie.Find("listened"))
 }
