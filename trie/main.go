@@ -3,7 +3,15 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"strings"
+
+	"github.com/pkg/errors"
+)
+
+var (
+	// ErrSuffixesFound is an error value for when a word cannot be deleted because it has dependent children TrieNodes'
+	ErrSuffixesFound = errors.New("canot delete word, suffixes exist")
 )
 
 // TrieNode represents a node a Trie data structure
@@ -67,67 +75,59 @@ func (t *Trie) Find(word string) bool {
 }
 
 // String prints the string value of the Trie
-func (t *Trie) String() string {
-	b, err := json.MarshalIndent(t, "", "  ")
+func (t *Trie) String(w io.Writer) error {
+	b, err := json.Marshal(t)
 	if err != nil {
-		panic(err)
+		return err
 	}
-	return string(b)
+	w.Write(b)
+	return nil
 }
 
 // Remove returns a string value indicating the result of attempting to remove an entire word from the Trie structure
-func (t *Trie) Remove(word string) string {
+func (t *Trie) Remove(word string) (string, error) {
 	node := t.RootNode
 	suffixes := []*TrieNode{}
 
 	letters := strings.Split(word, "")
+
 	// case where no part of 'word' can be removed from trie
 	for i := 0; i < len(letters); i++ {
 		currentLetter := letters[i]
 		if v, ok := node.Children[currentLetter]; ok {
 			node = v
+			// add the suffixes in reverse order a.k.a. unshift so 'word' will be [d,r,o,w] <- TrieNodes
 			suffixes = append([]*TrieNode{node}, suffixes...)
 			if i == len(letters) && len(node.Children) > 0 {
-				panic(fmt.Sprintf("suffixes in trie depend on %s", word))
+				return "", ErrSuffixesFound
 			}
 		}
 	}
 
 	// for case where some parts of 'word' can be removed from trie
 	for j := 1; j < len(suffixes); j++ {
-		parent := suffixes[j] // first element which was the last visited in above loop
+		childLetter := string(word[len(suffixes)-j]) // last character in the string "word", e.g. "d"
 
-		childLetter := string(word[len(suffixes)-j]) // last character in the string "word"
+		// the node in 'suffixes' representing the parent node of the node with 'childLetter' as its 'Val' in the Trie
+		parent := suffixes[j]
 
 		if childNode, exists := parent.Children[childLetter]; exists {
-			if len(childNode.Children) == 0 {
-				delete(parent.Children, childLetter)
-			} else {
-				return fmt.Sprintf("word '%s' cannot be removed because there are dependent suffixes", word)
+			// remove the current node from the parent Children map if the child is a leaf
+			if len(childNode.Children) > 0 {
+				return "", ErrSuffixesFound
 			}
+			delete(parent.Children, childLetter)
 		}
 
 		if parent.CompletesString || len(parent.Children) > 0 {
-			return fmt.Sprintf("some suffixes of '%s', were removed from trie", word)
+			return fmt.Sprintf("some suffixes of '%s', were removed from trie", word), nil
 		}
 	}
 
 	// for case where all parts of 'word' can be removed from trie
 	delete(t.RootNode.Children, string(word[0]))
 
-	return fmt.Sprintf("removed '%s'; no other '%s'=words remain", word, string(word[0]))
+	return fmt.Sprintf("removed '%s'; no other '%s' = words remain", word, string(word[0])), nil
 }
 
-func main() {
-	trie := NewTrie()
-	trie.Insert("listen")
-	fmt.Printf("'listen' found = %v\n", trie.Find("listen"))
-
-	trie.Insert("listened")
-	fmt.Printf("'listened' found = %v\n", trie.Find("listened"))
-
-	fmt.Println(trie.Remove("listen"))
-
-	fmt.Printf("'listen' found after remove? = %v\n", trie.Find("listen"))
-	fmt.Printf("'listened' found after remove? = %v\n", trie.Find("listened"))
-}
+func main() {}
