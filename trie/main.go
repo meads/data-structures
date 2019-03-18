@@ -74,7 +74,7 @@ func (t *Trie) Find(word string) bool {
 	return true
 }
 
-// String prints the string value of the Trie
+// String writes the string representation of the Trie to the supplied Buffer
 func (t *Trie) String(w io.Writer) error {
 	b, err := json.Marshal(t)
 	if err != nil {
@@ -85,26 +85,29 @@ func (t *Trie) String(w io.Writer) error {
 }
 
 // Remove returns a string value indicating the result of attempting to remove an entire word from the Trie structure
+// or an error indicating the problem encountered
 func (t *Trie) Remove(word string) (string, error) {
 	node := t.RootNode
 	suffixes := []*TrieNode{}
 
 	letters := strings.Split(word, "")
 
-	// case where no part of 'word' can be removed from trie
+	// walk the trie structure for each letter of 'word', determining at the end if the word has children before proceeding
 	for i := 0; i < len(letters); i++ {
 		currentLetter := letters[i]
 		if v, ok := node.Children[currentLetter]; ok {
 			node = v
 			// add the suffixes in reverse order a.k.a. unshift so 'word' will be [d,r,o,w] <- TrieNodes
 			suffixes = append([]*TrieNode{node}, suffixes...)
+
+			// can we even proceed with removal ?
 			if i == len(letters) && len(node.Children) > 0 {
 				return "", ErrSuffixesFound
 			}
 		}
 	}
 
-	// for case where some parts of 'word' can be removed from trie
+	// for each letter in 'word' work backwards from the edge removing a trie node from trie each go
 	for j := 1; j < len(suffixes); j++ {
 		childLetter := string(word[len(suffixes)-j]) // last character in the string "word", e.g. "d"
 
@@ -112,7 +115,6 @@ func (t *Trie) Remove(word string) (string, error) {
 		parent := suffixes[j]
 
 		if childNode, exists := parent.Children[childLetter]; exists {
-			// remove the current node from the parent Children map if the child is a leaf
 			if len(childNode.Children) > 0 {
 				return "", ErrSuffixesFound
 			}
@@ -124,7 +126,7 @@ func (t *Trie) Remove(word string) (string, error) {
 		}
 	}
 
-	// for case where all parts of 'word' can be removed from trie
+	// if we got this far, we are able to remove the root node of 'word' from the RootNode
 	delete(t.RootNode.Children, string(word[0]))
 
 	return fmt.Sprintf("removed '%s'; no other '%s' = words remain", word, string(word[0])), nil
