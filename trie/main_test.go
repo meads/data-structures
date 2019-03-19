@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func Test_Word_Inserted_Can_Be_Found(t *testing.T) {
+func TestInsert_Word_Inserted_Can_Be_Found(t *testing.T) {
 	sut := NewTrie()
 	word := "test"
 	sut.Insert(word)
@@ -14,23 +14,20 @@ func Test_Word_Inserted_Can_Be_Found(t *testing.T) {
 	}
 }
 
-func Test_Word_Removed_Can_Not_Be_Found(t *testing.T) {
+func TestInsert_Blank_Word_Or_Whitespace_Is_Ignored(t *testing.T) {
 	sut := NewTrie()
-	word := "test"
-	sut.Insert(word)
-	if !sut.Find(word) {
-		t.Errorf("expected '%s' to be found after Insert but 'false' returned from Find operation", word)
+	sut.Insert("")
+	if sut.Find("") {
+		t.Errorf("expected blank string to be ignored from being added found TrieNode with empty string as Val")
 	}
-	_, err := sut.Remove(word)
-	if err != nil {
-		t.Errorf("expected %v, got %v", nil, err)
-	}
-	if sut.Find(word) {
-		t.Errorf("expected '%s' to NOT be found after Remove but 'true' returned from Find operation", word)
+	sut = NewTrie()
+	sut.Insert(" ")
+	if sut.Find(" ") {
+		t.Errorf("expected blank string to be ignored from being added found TrieNode with empty string as Val")
 	}
 }
 
-func Test_Word_Suffix_Inserted_Can_Be_Found_Along_With_Parent(t *testing.T) {
+func TestInsert_Word_Suffix_Inserted_Can_Be_Found_Along_With_Parent(t *testing.T) {
 	sut := NewTrie()
 
 	word := "test"
@@ -47,7 +44,31 @@ func Test_Word_Suffix_Inserted_Can_Be_Found_Along_With_Parent(t *testing.T) {
 	}
 }
 
-func Test_Word_Doesnt_Allow_Removal_When_Children_Suffixes_Exist(t *testing.T) {
+func TestRemove_Word_Removed_Can_Not_Be_Found(t *testing.T) {
+	sut := NewTrie()
+	word := "test"
+	sut.Insert(word)
+	if !sut.Find(word) {
+		t.Errorf("expected '%s' to be found after Insert but 'false' returned from Find operation", word)
+	}
+	_, err := sut.Remove(word)
+	if err != nil {
+		t.Errorf("expected %v, got %v", nil, err)
+	}
+	if sut.Find(word) {
+		t.Errorf("expected '%s' to NOT be found after Remove but 'true' returned from Find operation", word)
+	}
+}
+
+func TestRemove_Non_Existing_Word_Supplied_Is_Ignored_No_Error(t *testing.T) {
+	sut := NewTrie()
+	if msg, err := sut.Remove("invalid"); err != nil {
+		t.Errorf("expected '%v', got '%v'", nil, err)
+		t.Errorf(msg)
+	}
+}
+
+func TestRemove_Word_Doesnt_Allow_Removal_When_Children_Suffixes_Exist(t *testing.T) {
 	sut := NewTrie()
 	word := "test"
 	sut.Insert(word)
@@ -60,7 +81,7 @@ func Test_Word_Doesnt_Allow_Removal_When_Children_Suffixes_Exist(t *testing.T) {
 	}
 }
 
-func Test_Word_Suffix_Removed_Doesnt_Affect_Parent(t *testing.T) {
+func TestRemove_Word_Suffix_Removed_Doesnt_Affect_Parent(t *testing.T) {
 	sut := NewTrie()
 
 	word := "test"
@@ -79,7 +100,7 @@ func Test_Word_Suffix_Removed_Doesnt_Affect_Parent(t *testing.T) {
 	}
 }
 
-func Test_String_Properly_Displays_Trie_Structure(t *testing.T) {
+func TestString_Properly_Displays_Trie_Structure(t *testing.T) {
 	sut := NewTrie()
 	sut.Insert("test")
 	sut.Insert("testing")

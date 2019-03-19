@@ -43,8 +43,12 @@ func NewTrie() *Trie {
 
 // Insert adds a word in the Trie structure
 func (t *Trie) Insert(word string) {
+	w := strings.TrimSpace(word)
+	if len(w) == 0 {
+		return
+	}
 	node := t.RootNode
-	letters := strings.Split(word, "")
+	letters := strings.Split(w, "")
 	for i := 0; i < len(letters); i++ {
 		currentLetter := letters[i]
 		if v, ok := node.Children[currentLetter]; ok {
@@ -60,8 +64,12 @@ func (t *Trie) Insert(word string) {
 
 // Find returns a boolean indicating that the word exists in the Trie
 func (t *Trie) Find(word string) bool {
+	w := strings.TrimSpace(word)
+	if len(w) == 0 {
+		return false
+	}
 	node := t.RootNode
-	letters := strings.Split(word, "")
+	letters := strings.Split(w, "")
 	for i := 0; i < len(letters); i++ {
 		currentLetter := letters[i]
 		if v, ok := node.Children[currentLetter]; ok {
