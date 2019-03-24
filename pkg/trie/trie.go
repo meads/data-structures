@@ -10,8 +10,8 @@ import (
 )
 
 var (
-	// ErrSuffixesFound is an error value for when a word cannot be deleted because it has dependent children TrieNodes'
-	ErrSuffixesFound = errors.New("dependent suffixes exist preventing word deletion")
+	// ErrSuffixesFound is an error value for when a word cannot be deleted because it has dependent child TrieNodes'
+	ErrSuffixesFound = errors.New("suffixes were found that prevent word removal")
 )
 
 var alph = []string{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"}
@@ -52,7 +52,7 @@ func (t *Trie) Insert(word string) {
 
 	node := t.RootNode
 	letters := strings.Split(w, "")
-	val := ""
+	val := "" // this will contain the parent nodes' 'value' + current node character so [w, wo, wor, word] etc.
 	for i := 0; i < len(letters); i++ {
 		currentLetter := letters[i]
 		val += currentLetter
@@ -69,21 +69,22 @@ func (t *Trie) Insert(word string) {
 
 // Exists returns a boolean indicating that the word exists in the Trie
 func (t *Trie) Exists(word string) bool {
-	w := strings.TrimSpace(word)
-	if len(w) == 0 {
+	word = strings.TrimSpace(word)
+	if len(word) == 0 {
 		return false
 	}
 	node := t.RootNode
 	letters := strings.Split(word, "")
 	for i := 0; i < len(letters); i++ {
-		currentLetter := letters[i]
-		if v, ok := node.Children[currentLetter]; ok {
+		if v, ok := node.Children[letters[i]]; ok {
 			node = v
-		} else {
-			return false
+			if i == len(letters)-1 {
+				return node.Val == word && node.CompletesString
+			}
+			continue
 		}
+		return false
 	}
-
 	return true
 }
 
@@ -117,6 +118,8 @@ func (t *Trie) Search(prefix string) []string {
 		currentLetter := letters[i]
 		if childNode, ok := node.Children[currentLetter]; ok {
 			node = childNode
+		} else {
+			return *possibleSuffixes
 		}
 	}
 
@@ -191,7 +194,7 @@ func (t *Trie) Remove(word string) (string, error) {
 	for j := 1; j < len(suffixes); j++ {
 		childLetter := string(word[len(suffixes)-j]) // last character in the string "word", e.g. "d"
 
-		// the node in 'suffixes' representing the parent node of the node with 'childLetter' as its 'Val' in the Trie
+		// the node in 'suffixes' representing the parent node of the node with 'childLetter' as its key in the Node
 		parent := suffixes[j]
 
 		if childNode, exists := parent.Children[childLetter]; exists {

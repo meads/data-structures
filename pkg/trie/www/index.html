@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Trie Search Example</title>
+</head>
+<body>
+    <div>
+        <input type="text" onkeyup="search(this)">
+    </div>
+
+    <div id="results"></div>
+    
+    <script>
+
+    function search(e) {
+        return fetch(`http://127.0.0.1:8080/?search=${e.value}`, {
+            method: "GET",
+            mode: "cors",
+        })
+        .then(handleResponse)
+        .catch(console.error)
+    }
+    function handleResponse(response) {
+        if (response.status !== 200) {
+            console.error('Looks like there was a problem. Status Code: ' + response.status)
+            return
+        }
+        return response.json().then(displayResults)
+    }
+    function displayResults(results) {
+        let resultsDiv = document.getElementById("results")
+        resultsDiv.innerHTML = ""
+        return results.map((r) => resultsDiv.innerHTML += `${r}<br>`)
+    }
+
+    </script>
+</body>
+</html>
