@@ -7,98 +7,74 @@ import (
 )
 
 func TestSearch_Suggestions_Are_Returned(t *testing.T) {
-	sut := NewTrie()
-	sut.Insert("test")
-	sut.Insert("tester")
-	sut.Insert("testing")
-
-	expected := []string{"est"}
-	actual := sut.Search("t")
-	if !reflect.DeepEqual(expected, actual) {
-		t.Errorf("expected %#v, got %#v", expected, actual)
-	}
-
-	expected = []string{"er", "ing"}
-	actual = sut.Search("test")
-	sort.Slice(actual, func(i, j int) bool { return actual[i] > actual[j] })
-	sort.Slice(expected, func(i, j int) bool { return expected[i] > expected[j] })
-	if !reflect.DeepEqual(expected, actual) {
-		t.Errorf("expected %#v, got %#v", expected, actual)
-	}
-
-	sut = NewTrie()
-	sut.Insert("test")
-	sut.Insert("tester")
-	sut.Insert("testosterone")
-	sut.Insert("testing")
-	sut.Insert("testicular")
-
-	expected = []string{"ng", "cular"}
-	actual = sut.Search("testi")
-	sort.Slice(expected, func(i, j int) bool { return expected[i] > expected[j] })
-	sort.Slice(actual, func(i, j int) bool { return actual[i] > actual[j] })
-
-	if !reflect.DeepEqual(expected, actual) {
-		t.Errorf("expected %#v, got %#v", expected, actual)
-	}
-
-	expected = []string{"sterone"}
-	actual = sut.Search("testo")
-	if !reflect.DeepEqual(expected, actual) {
-		t.Errorf("expected %#v, got %#v", expected, actual)
-	}
 
 	words := []string{
-		"able",
-		"ableeze",
-		"ablegate",
-		"ablegates",
-		"ablegation",
-		"ablend",
-		"ableness",
-		"ablepharia",
-		"ablepharon",
-		"ablepharous",
-		"ablepharus",
-		"ablepsy",
-		"ablepsia",
-		"ableptical",
-		"ableptically",
-		"abler",
-		"ables",
-		"ablesse",
-		"ablest",
-		"ablet",
-		"ablewhackets",
+		"aardvark",
+		"aardvarks",
+		"aardwolf",
+		"aardwolves",
+		"aargh",
+		"aaron",
+		"aaronic",
+		"aaronical",
+		"aaronite",
+		"aaronitic",
+		"aarrgh",
+		"aarrghh",
+		"aaru",
 	}
 
-	sut = NewTrie()
+	/*
+						 ""
+						 |
+						"a"
+						 |
+						"a"
+						 |
+						"r"
+						 |
+			  "d"    "g"     "o"  "r"  "u"
+			   |      |       |    |
+			--------  |       |    |
+		  "v"  "w"  |	     "n"  "g"
+			 |	  |	  |       |    |
+			"a"	 "o" "h"      |   "h"
+			|	  |		     "i"   |
+			"r"	" l"  	      |   "h"
+			 |	  |	          |
+			"k"  -------
+			|    "f" "v"      -----------
+			"s"	 			|	  	 "t"     "c"
+				   		 "e"	   -------    |
+				 				|      "e" "i"   "a"
+				   		 "s"		    |     |
+						     				"c"   "l"
+
+
+	*/
+
+	sut := NewTrie()
 	for _, w := range words {
 		sut.Insert(w)
 	}
-	expected = []string{
-		"eze",
-		"gate",
-		"gates",
-		"gation",
-		"nd",
-		"ness",
-		"pharia",
-		"pharon",
-		"pharous",
-		"pharus",
-		"psy",
-		"psia",
-		"ptical",
-		"ptically",
-		"r",
-		"s",
-		"sse",
-		"st",
-		"t",
-		"whackets",
+	expected := []string{
+		"dvark",
+		"dwolf",
+		"dwolves",
+		"gh",
+		"on",
+		"rgh",
+		"u", // fail ??
 	}
-	actual = sut.Search("able")
+
+	for _, el := range words {
+		n := sut.FindCompletesString(el)
+		if n == nil || !n.CompletesString {
+			t.Errorf("expected string to exist in trie %s and complete the string", el)
+		}
+	}
+
+	actual := sut.Search("aar")
 	sort.Slice(expected, func(i, j int) bool { return expected[i] > expected[j] })
 	sort.Slice(actual, func(i, j int) bool { return actual[i] > actual[j] })
 	if !reflect.DeepEqual(expected, actual) {

@@ -49,14 +49,17 @@ func (t *Trie) Insert(word string) {
 	if len(w) == 0 {
 		return
 	}
+
 	node := t.RootNode
 	letters := strings.Split(w, "")
+	val := ""
 	for i := 0; i < len(letters); i++ {
 		currentLetter := letters[i]
+		val += currentLetter
 		if v, ok := node.Children[currentLetter]; ok {
 			node = v
 		} else {
-			newNode := NewNode(currentLetter, node)
+			newNode := NewNode(val, node)
 			node.Children[currentLetter] = newNode
 			node = newNode
 		}
@@ -66,6 +69,10 @@ func (t *Trie) Insert(word string) {
 
 // Exists returns a boolean indicating that the word exists in the Trie
 func (t *Trie) Exists(word string) bool {
+	w := strings.TrimSpace(word)
+	if len(w) == 0 {
+		return false
+	}
 	node := t.RootNode
 	letters := strings.Split(word, "")
 	for i := 0; i < len(letters); i++ {
@@ -78,6 +85,26 @@ func (t *Trie) Exists(word string) bool {
 	}
 
 	return true
+}
+
+// FindCompletesString finds the leaf node for a word in the trie
+func (t *Trie) FindCompletesString(word string) *Node {
+	w := strings.TrimSpace(word)
+	if len(w) == 0 {
+		return nil
+	}
+	node := t.RootNode
+	letters := strings.Split(word, "")
+	for i := 0; i < len(letters); i++ {
+		currentLetter := letters[i]
+		if v, ok := node.Children[currentLetter]; ok {
+			node = v
+		} else {
+			return nil
+		}
+	}
+
+	return node
 }
 
 // Search given a prefix string will suggest next words.
@@ -98,7 +125,7 @@ func (t *Trie) Search(prefix string) []string {
 	for i := 0; i < 25; i++ {
 		if v, exists := node.Children[alph[i]]; exists {
 			w := ""
-			searchRecur(w, v, possibleSuffixes)
+			searchRecur(prefix, w, v, possibleSuffixes)
 		}
 	}
 
@@ -110,22 +137,18 @@ func (t *Trie) Search(prefix string) []string {
 
 }
 
-func searchRecur(prefix string, node *Node, suffixes *[]string) string {
-	prefix += node.Val
+func searchRecur(prefix, accumulator string, node *Node, suffixes *[]string) string {
+	accumulator += node.Val
 
 	if node.CompletesString {
-		return prefix
+		return node.Val
 	}
 
 	for _, v := range node.Children {
-		// prevent deep recursion
-		if len(node.Children) > 1 {
-			continue
-		}
-
-		if retval := searchRecur(prefix, v, suffixes); retval != "" {
-			*suffixes = append(*suffixes, retval)
-			prefix = ""
+		if retval := searchRecur(prefix, accumulator, v, suffixes); retval != "" {
+			val := v.Val
+			*suffixes = append(*suffixes, strings.Replace(val, prefix, "", 1))
+			accumulator = ""
 		}
 	}
 
