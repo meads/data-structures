@@ -8,33 +8,48 @@
 </head>
 <body>
     <div>
-        <input type="text" onkeyup="search(this)">
+        <input type="text" placeholder="search for something..." onkeyup="app.search(this)" autofocus>
     </div>
 
     <div id="results"></div>
     
     <script>
 
-    function search(e) {
-        return fetch(`http://127.0.0.1:8080/?search=${e.value}`, {
-            method: "GET",
-            mode: "cors",
-        })
-        .then(handleResponse)
-        .catch(console.error)
-    }
-    function handleResponse(response) {
-        if (response.status !== 200) {
-            console.error('Looks like there was a problem. Status Code: ' + response.status)
-            return
-        }
-        return response.json().then(displayResults)
-    }
-    function displayResults(results) {
+    var app = (function() {
         let resultsDiv = document.getElementById("results")
-        resultsDiv.innerHTML = ""
-        return results.map((r) => resultsDiv.innerHTML += `${r}<br>`)
-    }
+        let current = ""
+
+        function search(e) {
+            current = e.value
+            return fetch(`http://127.0.0.1:8080/?search=${current}`, {
+                method: "GET",
+                mode: "cors",
+            })
+            .then(handleResponse)
+            .catch(console.error)
+        }
+        function handleResponse(response) {
+            if (response.status !== 200) {
+                console.error('Looks like there was a problem. Status Code: ' + response.status)
+                return
+            }
+            return response.json().then(displayResults)
+        }
+        function openWindow(url) {
+            window.open(url, '_blank', 'location=yes,height=570,width=520,scrollbars=yes,status=yes')
+        }
+        function displayResults(results) {
+            let resultsDiv = document.getElementById("results")
+            resultsDiv.innerHTML = ""
+            return results.map((r) => {
+                let term = `${current}${r}`
+                let url = `https://www.dictionary.com/browse/${term}`
+                resultsDiv.innerHTML += `<a onclick="app.openWindow('${url}')" href="#">${term}</a><br>`
+            })
+        }
+
+        return { search, openWindow }
+    }())
 
     </script>
 </body>
