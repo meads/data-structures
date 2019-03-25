@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/pkg/browser"
+
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
@@ -64,5 +66,25 @@ func LoadSearch() {
 		handlers.AllowedMethods([]string{"GET", "OPTIONS"}),
 		handlers.AllowedOrigins([]string{"*"}),
 	)(router)
-	log.Fatal(http.ListenAndServe(":8080", handler))
+	go func() {
+		log.Fatal(http.ListenAndServe(":8080", handler))
+		return
+	}()
+
+	fs := http.FileServer(http.Dir("pkg/trie/www"))
+	http.Handle("/", fs)
+	log.Println("Listening...")
+
+	go func() {
+		log.Fatal(http.ListenAndServe(":3000", nil))
+		return
+	}()
+
+	err = browser.OpenURL("http://localhost:3000")
+	if err != nil {
+		log.Fatalf("failed to launch browser url:\n'%s'", err)
+		return
+	}
+
+	select {} // block main thread
 }

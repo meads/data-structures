@@ -108,7 +108,7 @@ func (t *Trie) FindCompletesString(word string) *Node {
 	return node
 }
 
-// Search given a prefix string will suggest next words.
+// Search given a prefix string will suggest 'nearby' words in the trie which form 'complete' dictionary words.
 func (t *Trie) Search(prefix string) []string {
 	node := t.RootNode
 	letters := strings.Split(prefix, "")
