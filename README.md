@@ -2,6 +2,8 @@
 
 A repo for common data structures implemented in Go.
 
+[![Build Status](https://travis-ci.com/meads/datastructures.svg?branch=master)](https://travis-ci.com/meads/datastructures)
+
 ## Installation
 
 ```bash
@@ -10,6 +12,7 @@ go get "github.com/pkg/browser"
 go get "github.com/gorilla/handlers"
 go get "github.com/gorilla/mux"
 ```
+
 
 ## Usage
 Use the source code or explore the examples like below.
