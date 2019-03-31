@@ -158,7 +158,7 @@ func searchRecur(prefix, accumulator string, node *Node, suffixes *[]string) str
 	return ""
 }
 
-// String writes the string representation of the Trie to the supplied Buffer
+// String prints the string representation of the Trie structure in a "sort of" readable fashion
 func (t *Trie) String() {
 	b, err := json.MarshalIndent(t, "", " ")
 	if err != nil {
