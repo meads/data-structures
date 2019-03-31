@@ -3,4 +3,11 @@ language: go
 go:
 - "1.11"
 
-script: go test -v ./...
+script:
+  - export GO111MODULE=on
+  - go test -coverprofile=coverage.out ./pkg/trie/...
+  - cat coverage.out | grep -v "trie_search.go" > coverage.out
+
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
