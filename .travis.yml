@@ -5,7 +5,7 @@ go:
 
 script:
   - export GO111MODULE=on
-  - go test -coverprofile=coverage.out.tmp ./pkg/trie/...
+  - go test -coverprofile=coverage.out.tmp ./pkg/...
   - touch coverage.out
   - cat coverage.out.tmp | grep -v "trie_search.go" > coverage.out
   - rm coverage.out.tmp
