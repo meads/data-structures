@@ -1,6 +1,8 @@
 package trie
 
 import (
+	"encoding/json"
+	"fmt"
 	"reflect"
 	"sort"
 	"testing"
@@ -89,6 +91,19 @@ func TestRemove_Word_Removed_Can_Not_Be_Found(t *testing.T) {
 	}
 }
 
+func TestRemove_Word_Can_Not_Be_Removed_SuffixesFound_Error(t *testing.T) {
+	sut := NewTrie()
+	sut.Insert("test")
+	sut.Insert("testing")
+	mssg, err := sut.Remove("tes")
+	if mssg != "" {
+		t.Errorf("expected '' got '%s'", mssg)
+	}
+	if errors.Cause(err) != ErrSuffixesFound {
+		t.Errorf("expected '%v', got '%v'", ErrSuffixesFound, errors.Cause(err))
+	}
+}
+
 func TestRemove_Non_Existing_Word_Supplied_Is_Ignored_No_Error(t *testing.T) {
 	sut := NewTrie()
 	if msg, err := sut.Remove("invalid"); err != nil {
@@ -138,7 +153,7 @@ func TestSearch_Suggestions_Are_Empty_Given_Invalid_Term(t *testing.T) {
 
 	actual := sut.Search("invalid")
 	if !reflect.DeepEqual(expected, actual) {
-		sut.String()
+		marshalAndPrint(sut)
 		t.Errorf("\nexpected\n%#v\ngot\n%#v\n", expected, actual)
 	}
 }
@@ -186,7 +201,43 @@ func TestSearch_Suggestions_Are_Returned(t *testing.T) {
 	sort.Slice(expected, func(i, j int) bool { return expected[i] > expected[j] })
 	sort.Slice(actual, func(i, j int) bool { return actual[i] > actual[j] })
 	if !reflect.DeepEqual(expected, actual) {
-		sut.String()
+		marshalAndPrint(sut)
 		t.Errorf("\nexpected\n%#v\ngot\n%#v\n", expected, actual)
 	}
+}
+
+func TestFindCompletesString_Returns_Nil_Given_Zero_Length_String(t *testing.T) {
+	sut := NewTrie()
+	sut.Insert("apple")
+	result := sut.FindCompletesString("")
+	if result != nil {
+		t.Errorf("expected '<nil>' got '%+v'", result)
+	}
+}
+
+func TestFindCompletesString_Returns_Nil_Given_Incomplete_Suffix(t *testing.T) {
+	sut := NewTrie()
+	sut.Insert("apple")
+	result := sut.FindCompletesString("apples")
+	if result != nil {
+		t.Errorf("expected '<nil>' got '%+v'", result)
+	}
+}
+
+func TestFindCompletesString_Returns_Node_Given_Valid_Word(t *testing.T) {
+	sut := NewTrie()
+	sut.Insert("apple")
+	result := sut.FindCompletesString("apple")
+	if result == nil {
+		t.Errorf("expected '<nil>' got '%+v'", result)
+	}
+}
+
+// prints the string representation of the Trie structure in a "sort of" readable fashion
+func marshalAndPrint(t *Trie) {
+	b, err := json.MarshalIndent(t, "", " ")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(string(b))
 }

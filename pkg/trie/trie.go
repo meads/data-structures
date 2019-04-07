@@ -1,7 +1,6 @@
 package trie
 
 import (
-	"encoding/json"
 	"fmt"
 	"sort"
 	"strings"
@@ -75,17 +74,19 @@ func (t *Trie) Exists(word string) bool {
 	}
 	node := t.RootNode
 	letters := strings.Split(word, "")
+	var result bool
 	for i := 0; i < len(letters); i++ {
 		if v, ok := node.Children[letters[i]]; ok {
 			node = v
 			if i == len(letters)-1 {
-				return node.Val == word && node.CompletesString
+				result = node.Val == word && node.CompletesString
+				break
 			}
 			continue
 		}
-		return false
+		break
 	}
-	return true
+	return result
 }
 
 // FindCompletesString finds the leaf node for a word in the trie
@@ -158,15 +159,6 @@ func searchRecur(prefix, accumulator string, node *Node, suffixes *[]string) str
 	return ""
 }
 
-// String prints the string representation of the Trie structure in a "sort of" readable fashion
-func (t *Trie) String() {
-	b, err := json.MarshalIndent(t, "", " ")
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(string(b))
-}
-
 // Remove returns a string value indicating the result of attempting to remove an entire word from the Trie structure
 // or an error indicating the problem encountered
 func (t *Trie) Remove(word string) (string, error) {
@@ -184,9 +176,9 @@ func (t *Trie) Remove(word string) (string, error) {
 			suffixes = append([]*Node{node}, suffixes...)
 
 			// can we even proceed with removal ?
-			if i == len(letters) && len(node.Children) > 0 {
-				return "", ErrSuffixesFound
-			}
+			// if i == len(letters) && len(node.Children) > 0 {
+			// 	return "", ErrSuffixesFound
+			// }
 		}
 	}
 

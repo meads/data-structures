@@ -1,6 +1,6 @@
 package linkedlist
 
-// LinkableList ...
+// LinkableList describes the set of methods of a LinkedList
 type LinkableList interface {
 	InsertFront(data interface{})
 	InsertLast(data interface{})
@@ -10,13 +10,13 @@ type LinkableList interface {
 	Reverse()
 }
 
-// Node represents a node in a Linked List data structure
+// Node represents a node in a LinkedList data structure
 type Node struct {
 	Data interface{}
 	Next *Node
 }
 
-// NewNode ...
+// NewNode constructs an instance of linkedlist.Node with the supplied 'data'
 func NewNode(data interface{}) *Node {
 	return &Node{
 		Data: data,
@@ -24,7 +24,8 @@ func NewNode(data interface{}) *Node {
 	}
 }
 
-// LinkedList is a linear data structure storing data and address "next" at each node. The last node has a "next" of nil
+// LinkedList is a linear data structure storing data and address "next" at each node. Its' Head
+// reference (pointer to Node) links to each subsequent Node in the LinkedList
 type LinkedList struct {
 	Head *Node
 }
@@ -34,14 +35,14 @@ func New() LinkableList {
 	return &LinkedList{}
 }
 
-// InsertFront inserts the supplied data via a Node at the front of the LinkedList structure
+// InsertFront inserts the supplied data in a Node at the front of the LinkedList
 func (l *LinkedList) InsertFront(data interface{}) {
 	newNode := &Node{Data: data}
 	newNode.Next = l.Head
 	l.Head = newNode
 }
 
-// InsertLast inserts the supplied data in a Node at the last position in the LinkedList structure
+// InsertLast inserts the supplied data in a Node at the last position in the LinkedList
 func (l *LinkedList) InsertLast(data interface{}) {
 	newNode := &Node{Data: data}
 	if l.Head == nil {
@@ -52,7 +53,7 @@ func (l *LinkedList) InsertLast(data interface{}) {
 	lastNode.Next = newNode
 }
 
-// GetLastNode iterates the LinkedList structure until it has reached a nil "next" pointer and returns that node
+// GetLastNode iterates the LinkedList until it reaches a nil "next" pointer then returns that node
 func (l *LinkedList) GetLastNode() *Node {
 	temp := l.Head
 	for temp.Next != nil {
@@ -61,7 +62,7 @@ func (l *LinkedList) GetLastNode() *Node {
 	return temp
 }
 
-// InsertAfter inserts data in the Node after the supplied prevNode in the LinkedList structure
+// InsertAfter inserts data in the Node after the supplied prevNode in the LinkedList
 func (l *LinkedList) InsertAfter(prevNode *Node, data interface{}) {
 	if prevNode == nil {
 		return
@@ -71,7 +72,7 @@ func (l *LinkedList) InsertAfter(prevNode *Node, data interface{}) {
 	prevNode.Next = newNode
 }
 
-// DeleteNodeByKey ...
+// DeleteNodeByKey deletes the node in the LinkedList having its' Data equal the supplied 'key'
 func (l *LinkedList) DeleteNodeByKey(key interface{}) {
 	temp := l.Head
 	var prev *Node
@@ -89,7 +90,7 @@ func (l *LinkedList) DeleteNodeByKey(key interface{}) {
 	prev.Next = temp.Next
 }
 
-// Reverse reverses the LinkedList structure instance
+// Reverse reverses the order of the Nodes in a LinkedList instance
 func (l *LinkedList) Reverse() {
 	var prev *Node
 	current := l.Head
