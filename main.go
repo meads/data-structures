@@ -16,7 +16,7 @@ func main() {
 		fmt.Println("loading trie search example.")
 		trie.LoadSearch()
 	default:
-		fmt.Printf("please specify example to run e.g. \n\ngo run main.go -example trie\n")
+		fmt.Printf("please specify an example to run e.g. \n\ngo run main.go -example trie\n")
 	}
 
 	fmt.Println("exiting...")
